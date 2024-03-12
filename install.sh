@@ -1,27 +1,19 @@
 #!/bin/bash
 
-sudo tee /etc/apt/sources.list.d/pritunl.list << EOF
-deb http://repo.pritunl.com/unstable/apt focal main
-EOF
-
-sudo apt --assume-yes install gnupg
-gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 7568D9BB55FF9E5287D586017AE645C0CF8E292A
-gpg --armor --export 7568D9BB55FF9E5287D586017AE645C0CF8E292A | sudo tee /etc/apt/trusted.gpg.d/pritunl.asc
-
-sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list << EOF
-deb https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse
-EOF
-
-wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
-
-sudo apt update
-sudo apt --assume-yes upgrade
-
-# WireGuard server support
-sudo apt -y install wireguard wireguard-tools
-
 sudo ufw disable
+sudo apt update -y
 
-sudo apt -y install pritunl mongodb-org
-sudo systemctl enable mongod pritunl
-sudo systemctl start mongod pritunl
+echo "deb http://repo.pritunl.com/stable/apt $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/pritunl.list
+sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list << EOF
+deb https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/6.0 multiverse
+EOF
+
+curl -fsSL https://www.mongodb.org/static/pgp/server-6.0.asc|sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/mongodb-6.gpg
+curl -fsSL  https://raw.githubusercontent.com/pritunl/pgp/master/pritunl_repo_pub.asc|sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pritunl.gpg
+
+sudo apt update -y
+sudo apt install pritunl mongodb-org -y
+sudo apt install wireguard wireguard-tools -y
+
+sudo systemctl start pritunl mongod
+sudo systemctl enable pritunl mongod
