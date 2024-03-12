@@ -1,8 +1,8 @@
 #!/bin/bash
 
 printunl_version="1.30.3431.73"
-ubuntu_codename="focal_amd64"
-installation_directory="/usr/lib/pritunl/lib/python3.8/site-packages/pritunl"
+ubuntu_codename="jammy_amd64"
+installation_directory="/usr/lib/pritunl/lib/python3.10/site-packages/pritunl"
 handlers_subscription="https://gist.githubusercontent.com/ongtungduong/216d3d30f64f940f6813828746ab7e8b/raw/handlers.py"
 subscription="https://gist.githubusercontent.com/ongtungduong/e844e488cf6a2b085dde1ac94d893d26/raw/subscription.py"
 
