@@ -54,7 +54,7 @@ def subscription_post():
         'end license', '')
     license = re.sub(r'[\W_]+', '', license)
 
-    # Remove the following code to upgrade
+    # Comment the following code to upgrade
 
     # try:
     #     url = 'https://app.pritunl.com/subscription'

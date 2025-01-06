@@ -12,6 +12,8 @@ from hashlib import md5
 from urllib.request import urlopen
 import requests
 
+# Add the following code to upgrade
+import os
 
 def update():
     license = settings.app.license
@@ -35,7 +37,7 @@ def update():
     else:
         for i in range(2):
             try:
-                # Remove the following code to upgrade
+                # Comment the following code to upgrade
 
                 # url = 'https://app.pritunl.com/subscription'
                 # if settings.app.dedicated:
@@ -61,7 +63,12 @@ def update():
                 #
                 # data = response.json()
 
-                css = urlopen('https://raw.githubusercontent.com/ongtungduong/quick-installers/main/pritunl/enterprise.css').read()
+                # Add the following code to upgrade
+                if not os.path.exists(os.path.expanduser('/tmp/pritunl-installer/enterprise.css')):
+                    css = urlopen('https://raw.githubusercontent.com/ongtungduong/pritunl-installer/main/enterprise.css').read()
+                else:
+                    with open(os.path.expanduser('/tmp/pritunl-installer/enterprise.css'), 'rb') as f:
+                        css = f.read()
                 etag = md5(css).hexdigest()
 
                 data = {
@@ -81,6 +88,7 @@ def update():
                         'data': css
                     },
                 }
+                # End of the code to upgrade
 
                 settings.local.sub_active = data['active']
                 settings.local.sub_status = data['status']
