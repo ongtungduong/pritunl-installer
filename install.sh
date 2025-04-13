@@ -1,39 +1,27 @@
 #!/bin/bash
 
-CODENAME=$(lsb_release -cs)
-PROTOCOL=$( [ $CODENAME = "focal" ] && echo "http" || echo "https" )
-REPO="$PROTOCOL://repo.pritunl.com/stable/apt"
+# https://pritunl.com/
+# Install Pritunl on Ubuntu 22.04
 
-# Prompt for installation type
-read -p "Enter installation type (server/client) [Default: server]: " TYPE
-INSTALLATION_TYPE=${TYPE:-"server"}
-
-# Add Pritunl repository
-echo "deb $REPO $CODENAME main" | sudo tee /etc/apt/sources.list.d/pritunl.list
-sudo apt --assume-yes install gnupg
-gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 7568D9BB55FF9E5287D586017AE645C0CF8E292A
-gpg --armor --export 7568D9BB55FF9E5287D586017AE645C0CF8E292A | sudo tee /etc/apt/trusted.gpg.d/pritunl.asc
-
-if [ "$INSTALLATION_TYPE" = "client" ]; then
-    # Install Pritunl Client
-    sudo apt update -y
-    sudo apt install pritunl-client wireguard wireguard-tools -y
-    echo "Pritunl Client installed successfully"
-    exit 0
-fi
-
-# Add MongoDB repository
-sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list << EOF
-deb https://repo.mongodb.org/apt/ubuntu $CODENAME/mongodb-org/6.0 multiverse
+sudo tee /etc/apt/sources.list.d/mongodb-org.list << EOF
+deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse
 EOF
-wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
 
-# Install WireGuard, Pritunl Server and MongoDB
-sudo apt update -y
-sudo apt install wireguard wireguard-tools -y
-sudo apt install pritunl mongodb-org -y
+sudo tee /etc/apt/sources.list.d/openvpn.list << EOF
+deb [ signed-by=/usr/share/keyrings/openvpn-repo.gpg ] https://build.openvpn.net/debian/openvpn/stable jammy main
+EOF
 
-# Disable UFW and enable services
+sudo tee /etc/apt/sources.list.d/pritunl.list << EOF
+deb [ signed-by=/usr/share/keyrings/pritunl.gpg ] https://repo.pritunl.com/stable/apt jammy main
+EOF
+
+sudo apt --assume-yes install gnupg
+curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor --yes
+curl -fsSL https://swupdate.openvpn.net/repos/repo-public.gpg | sudo gpg -o /usr/share/keyrings/openvpn-repo.gpg --dearmor --yes
+curl -fsSL https://raw.githubusercontent.com/pritunl/pgp/master/pritunl_repo_pub.asc | sudo gpg -o /usr/share/keyrings/pritunl.gpg --dearmor --yes
+
 sudo ufw disable
-sudo systemctl enable mongod pritunl --now
-echo "Pritunl Server installed successfully"
+sudo apt update
+sudo apt --assume-yes install pritunl mongodb-org wireguard-tools
+sudo systemctl start mongod pritunl
+sudo systemctl enable mongod pritunl

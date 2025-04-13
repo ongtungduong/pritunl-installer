@@ -1,53 +1,20 @@
-# How to use
+# Pritunl Installer
 
-## Clone the repository
+**Repository tested on Ubuntu 22.04 only.**
 
-First, clone the repository to **/tmp/pritunl-installer**:
-```bash
-git clone https://github.com/ongtungduong/pritunl-installer.git /tmp/pritunl-installer
-```
-
-## Install Pritunl (Server or Client)
-Change directory to **/tmp/pritunl-installer** and run the **install.sh** script.
+## Install Pritunl Server
+Run the **install.sh** script or follow the instructions on the [Pritunl Homepage](https://pritunl.com/).
 
 ## Upgrade Pritunl Server
-You will need to install and setup Pritunl before upgrading.
 
-Change directory to **/tmp/pritunl-installer** and running the **upgrade.sh** script.
+Find Pritunl directory in your system. For example: **/usr/lib/pritunl/usr/lib/python3.9/site-packages/pritunl**
+
+Find your own url key and etag. (Or you can simply ask me)
+
+Change values of url key and etag in the **subscription.py** file. And copy **enterprise.css.encrypted**, **subscription.py** and **handlers/subscription.py** files to the Pritunl directory.
+
+Restart Pritunl service.
 
 After upgrade, go to the management console and click on the **Upgrade to Enterprise**, then click on **Activate Subscription**.
 
-Enter random license key and submit.
-
-## Live on the edge
-
-If you don't want to clone the repository, you can run the following command to install Pritunl (Server or Client).
-
-```bash
-bash <(curl -sSL https://github.com/ongtungduong/pritunl-installer/raw/main/install.sh)
-```
-
-And upgrade Pritunl Server by running the following command.
-
-```bash
-bash <(curl -sSL https://github.com/ongtungduong/pritunl-installer/raw/main/upgrade.sh)
-```
-
-## Configuration
-
-### Increase Open File Limit
-```bash
-echo "* hard nofile 64000" | sudo tee -a /etc/security/limits.conf
-echo "* soft nofile 64000" | sudo tee -a /etc/security/limits.conf
-echo "root hard nofile 64000" | sudo tee -a /etc/security/limits.conf
-echo "root soft nofile 64000" | sudo tee -a /etc/security/limits.conf
-```
-
-### Load Balancing
-```bash
-sudo pritunl set app.reverse_proxy true
-sudo pritunl set app.redirect_server false
-sudo pritunl set app.server_ssl false
-sudo pritunl set app.server_port 80
-```
-
+Enter license key and submit.

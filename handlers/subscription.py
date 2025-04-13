@@ -10,6 +10,12 @@ import flask
 import requests
 import re
 import http.client
+import hashlib
+import base64
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.ciphers import (
+    Cipher, algorithms, modes
+)
 
 @app.app.route('/subscription', methods=['GET'])
 @auth.session_auth
@@ -33,9 +39,25 @@ def subscription_styles_get(plan, ver):
     except KeyError:
         subscription.update()
         try:
-                styles = settings.local.sub_styles[plan]
+            styles = settings.local.sub_styles[plan]
         except KeyError:
-                styles = {'etag' : 0, 'last_modified' : 0, 'data' : ''}
+            styles = {'etag' : 0, 'last_modified' : 0, 'data' : ''}
+
+    if styles['etag'] and styles['data']:
+        iv = utils.unsafe_md5(styles['etag'].encode()).digest()
+        key = hashlib.sha256(settings.local.sub_url_key.encode()).digest()
+        cipher = Cipher(
+            algorithms.AES(key),
+            modes.CBC(iv),
+            backend=default_backend()
+        ).decryptor()
+        dec_data = (cipher.update(base64.b64decode(styles['data'])) +
+                    cipher.finalize()).rstrip(b'\x00')
+        return utils.styles_response(
+            styles['etag'],
+            styles['last_modified'],
+            dec_data,
+        )
 
     return utils.styles_response(
         styles['etag'],
@@ -54,13 +76,11 @@ def subscription_post():
         'end license', '')
     license = re.sub(r'[\W_]+', '', license)
 
-    # Comment the following code to upgrade
-
     # try:
     #     url = 'https://app.pritunl.com/subscription'
     #     if settings.app.dedicated:
     #         url = settings.app.dedicated + '/subscription'
-    #
+
     #     response = requests.get(
     #         url,
     #         json={
@@ -74,7 +94,7 @@ def subscription_post():
     #         'error_msg': SUBSCRIPTION_SERVER_ERROR_MSG,
     #     }, 500)
     # data = response.json()
-    #
+
     # if response.status_code != 200:
     #     return utils.jsonify(data, response.status_code)
 
@@ -93,41 +113,41 @@ def subscription_put():
     if settings.app.demo_mode:
         return utils.demo_blocked()
 
-    card = flask.request.json.get('card')
-    email = flask.request.json.get('email')
-    plan = flask.request.json.get('plan')
-    cancel = flask.request.json.get('cancel')
+    # card = flask.request.json.get('card')
+    # email = flask.request.json.get('email')
+    # plan = flask.request.json.get('plan')
+    # cancel = flask.request.json.get('cancel')
 
-    try:
-        url = 'https://app.pritunl.com/subscription'
-        if settings.app.dedicated:
-            url = settings.app.dedicated + '/subscription'
+    # try:
+    #     url = 'https://app.pritunl.com/subscription'
+    #     if settings.app.dedicated:
+    #         url = settings.app.dedicated + '/subscription'
 
-        if cancel:
-            response = requests.delete(
-                url,
-                json={
-                    'license': settings.app.license,
-                },
-            )
-        else:
-            response = requests.put(
-                url,
-                json={
-                    'license': settings.app.license,
-                    'card': card,
-                    'plan': plan,
-                    'email': email,
-                },
-            )
-    except http.client.HTTPException:
-        return utils.jsonify({
-            'error': SUBSCRIPTION_SERVER_ERROR,
-            'error_msg': SUBSCRIPTION_SERVER_ERROR_MSG,
-        }, 500)
+    #     if cancel:
+    #         response = requests.delete(
+    #             url,
+    #             json={
+    #                 'license': settings.app.license,
+    #             },
+    #         )
+    #     else:
+    #         response = requests.put(
+    #             url,
+    #             json={
+    #                 'license': settings.app.license,
+    #                 'card': card,
+    #                 'plan': plan,
+    #                 'email': email,
+    #             },
+    #         )
+    # except http.client.HTTPException:
+    #     return utils.jsonify({
+    #         'error': SUBSCRIPTION_SERVER_ERROR,
+    #         'error_msg': SUBSCRIPTION_SERVER_ERROR_MSG,
+    #     }, 500)
 
-    if response.status_code != 200:
-        return utils.jsonify(response.json(), response.status_code)
+    # if response.status_code != 200:
+    #     return utils.jsonify(response.json(), response.status_code)
 
     subscription.update()
 

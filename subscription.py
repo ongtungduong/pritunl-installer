@@ -7,13 +7,12 @@ from pritunl import utils
 from pritunl import event
 from pritunl import mongo
 from pritunl import messenger
-from datetime import datetime
-from hashlib import md5
-from urllib.request import urlopen
-import requests
 
-# Add the following code to upgrade
-import os
+import requests
+import base64
+
+def x(a):
+    return base64.b64decode(a).decode()
 
 def update():
     license = settings.app.license
@@ -33,83 +32,95 @@ def update():
         settings.local.sub_trial_end = None
         settings.local.sub_cancel_at_period_end = None
         settings.local.sub_balance = None
+        settings.local.sub_portal_url = None
+        settings.local.sub_premium_buy_url = None
+        settings.local.sub_enterprise_buy_url = None
         settings.local.sub_url_key = None
     else:
         for i in range(2):
             try:
                 # Comment the following code to upgrade
+                # url = x(b'aHR0cHM6Ly9hcHAucHJpdHVubC5jb20vc3Vic2NyaXB0aW9u')
 
-                # url = 'https://app.pritunl.com/subscription'
-                # if settings.app.dedicated:
-                #     url = settings.app.dedicated + '/subscription'
-                #
                 # response = requests.get(
                 #     url,
                 #     json={
-                #         'id': settings.app.id,
-                #         'license': license,
-                #         'version': settings.local.version_int,
+                #         x(b'aWQ='): settings.app.id,
+                #         x(b'bGljZW5zZQ=='): license,
+                #         x(b'dmVyc2lvbg=='): settings.local.version_int,
                 #     },
                 #     timeout=max(settings.app.http_request_timeout, 10),
                 # )
-                #
+
                 # # License key invalid
                 # if response.status_code == 470:
                 #     raise ValueError('License key is invalid')
-                #
+
                 # if response.status_code == 473:
                 #     raise ValueError(('Version %r not recognized by ' +
                 #         'subscription server') % settings.local.version_int)
-                #
+
                 # data = response.json()
 
                 # Add the following code to upgrade
-                if not os.path.exists(os.path.expanduser('/tmp/pritunl-installer/enterprise.css')):
-                    css = urlopen('https://raw.githubusercontent.com/ongtungduong/pritunl-installer/main/enterprise.css').read()
-                else:
-                    with open(os.path.expanduser('/tmp/pritunl-installer/enterprise.css'), 'rb') as f:
-                        css = f.read()
-                etag = md5(css).hexdigest()
+                from datetime import datetime
 
+                url_key = ''
+                etag = ''
+
+                pritunl_dir = '/usr/lib/pritunl/usr/lib/python3.9/site-packages/pritunl'
+                with open(f'{pritunl_dir}/enterprise.css.encrypted', 'r') as file:
+                    styles_data = file.read()
+                
                 data = {
-                    "status": "trialing",
-                    "amount": 5000,
-                    "trial_end": 2000000000,
-                    "cancel_at_period_end": False,
-                    "plan": "enterprise",
-                    "period_end": 2000000000,
-                    "active": True,
-                    "balance": 0,
-                    "url_key": "PRITUNLENTERPRISE",
-                    "quantity": 1,
+                    'active': True,
+                    'status': 'trialing',
+                    'plan': 'enterprise',
+                    'quantity': 1,
+                    'amount': 7000, # 70$
+                    'period_end': 2524608000,  # December 31, 2050
+                    'trial_end': 2524608000,  # December 31, 2050
+                    'cancel_at_period_end': False,
+                    'balance': 0,
+                    'url_key': url_key,
+                    'portal_url': '',
+                    'premium_buy_url': '',
+                    'enterprise_buy_url': '',
                     'styles': {
                         'etag': etag,
-                        'last_modified': datetime.today().strftime('%Y-%m-%d'),
-                        'data': css
-                    },
+                        'last_modified': datetime.now().strftime('%Y-%m-%d'),
+                        'data': styles_data
+                    }
                 }
                 # End of the code to upgrade
 
-                settings.local.sub_active = data['active']
-                settings.local.sub_status = data['status']
-                settings.local.sub_plan = data['plan']
-                settings.local.sub_quantity = data['quantity']
-                settings.local.sub_amount = data['amount']
-                settings.local.sub_period_end = data['period_end']
-                settings.local.sub_trial_end = data['trial_end']
-                settings.local.sub_cancel_at_period_end = data[
-                    'cancel_at_period_end']
-                settings.local.sub_balance = data.get('balance')
-                settings.local.sub_url_key = data.get('url_key')
-                settings.local.sub_styles[data['plan']] = data['styles']
+                settings.local.sub_active = data[x(b'YWN0aXZl')]
+                settings.local.sub_status = data[x(b'c3RhdHVz')]
+                settings.local.sub_plan = data[x(b'cGxhbg==')]
+                settings.local.sub_quantity = data[x(b'cXVhbnRpdHk=')]
+                settings.local.sub_amount = data[x(b'YW1vdW50')]
+                settings.local.sub_period_end = data[x(b'cGVyaW9kX2VuZA==')]
+                settings.local.sub_trial_end = data[x(b'dHJpYWxfZW5k')]
+                settings.local.sub_cancel_at_period_end = \
+                    data[x(b'Y2FuY2VsX2F0X3BlcmlvZF9lbmQ=')]
+                settings.local.sub_balance = data.get(x(b'YmFsYW5jZQ=='))
+                settings.local.sub_portal_url = \
+                    data.get(x(b'cG9ydGFsX3VybA=='))
+                settings.local.sub_premium_buy_url = \
+                    data.get(x(b'cHJlbWl1bV9idXlfdXJs'))
+                settings.local.sub_enterprise_buy_url = \
+                    data.get(x(b'ZW50ZXJwcmlzZV9idXlfdXJs'))
+                settings.local.sub_url_key = data.get(x(b'dXJsX2tleQ=='))
+                settings.local.sub_styles[data[x(b'cGxhbg==')]] = \
+                    data[x(b'c3R5bGVz')]
             except:
                 if i < 1:
                     logger.exception('Failed to check subscription status',
-                                     'subscription, retrying...')
+                        'subscription, retrying...')
                     time.sleep(1)
                     continue
                 logger.exception('Failed to check subscription status',
-                                 'subscription')
+                    'subscription')
                 settings.local.sub_active = False
                 settings.local.sub_status = None
                 settings.local.sub_plan = None
@@ -127,7 +138,7 @@ def update():
         settings.app.license_plan = settings.local.sub_plan
         settings.commit()
 
-    response = collection.update({
+    response = collection.update_one({
         '_id': 'subscription',
         '$or': [
             {'active': {'$ne': settings.local.sub_active}},
@@ -137,7 +148,7 @@ def update():
         'active': settings.local.sub_active,
         'plan': settings.local.sub_plan,
     }})
-    if response['updatedExisting']:
+    if bool(response.modified_count):
         if settings.local.sub_active:
             if settings.local.sub_plan == 'premium':
                 event.Event(type=SUBSCRIPTION_PREMIUM_ACTIVE)
@@ -159,12 +170,26 @@ def update():
 
     return True
 
-
 def dict():
     if settings.app.demo_mode:
         url_key = 'demo'
     else:
         url_key = settings.local.sub_url_key
+
+    if settings.app.demo_mode:
+        portal_url = 'demo'
+    else:
+        portal_url = settings.local.sub_portal_url
+
+    if settings.app.demo_mode:
+        premium_buy_url = 'demo'
+    else:
+        premium_buy_url = settings.local.sub_premium_buy_url
+
+    if settings.app.demo_mode:
+        enterprise_buy_url = 'demo'
+    else:
+        enterprise_buy_url = settings.local.sub_enterprise_buy_url
 
     return {
         'active': settings.local.sub_active,
@@ -176,9 +201,11 @@ def dict():
         'trial_end': settings.local.sub_trial_end,
         'cancel_at_period_end': settings.local.sub_cancel_at_period_end,
         'balance': settings.local.sub_balance,
+        'portal_url': portal_url,
+        'premium_buy_url': premium_buy_url,
+        'enterprise_buy_url': enterprise_buy_url,
         'url_key': url_key,
     }
-
 
 def update_license(license):
     settings.app.license = license
