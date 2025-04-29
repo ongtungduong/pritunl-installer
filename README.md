@@ -1,17 +1,15 @@
 # Pritunl Installer
 
-**Repository tested on Ubuntu 22.04 only.**
+**Repository tested on Ubuntu 22.04 (Jammy) with Pritunl version 1.32.4181.41.**
 
 ## Install Pritunl Server
 Run the **install.sh** script or follow the instructions on the [Pritunl Homepage](https://pritunl.com/).
 
 ## Upgrade Pritunl Server
 
-Find Pritunl directory in your system. For example: **/usr/lib/pritunl/usr/lib/python3.9/site-packages/pritunl**
+Change the values of PRITUNL_URL_KEY, PRITUNL_ETAG and PRITUNL_HOME_DIR in the **constants.py** file.
 
-Find your own url key and etag. (Or you can simply ask me)
-
-Change values of url key and etag in the **subscription.py** file. And copy **enterprise.css.encrypted**, **subscription.py** and **handlers/subscription.py** files to the Pritunl directory.
+Copy **data.encrypted**, **subscription.py**, **constants.py** and **handlers/subscription.py** files to the Pritunl directory.
 
 Restart Pritunl service.
 

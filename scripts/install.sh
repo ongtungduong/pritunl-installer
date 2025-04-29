@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # https://pritunl.com/
-# Install Pritunl on Ubuntu 22.04
+# Install Pritunl on Ubuntu 22.04 (Jammy)
+# Latest version: 1.32.4181.41
 
 sudo tee /etc/apt/sources.list.d/mongodb-org.list << EOF
 deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse

@@ -65,11 +65,7 @@ def update():
                 # Add the following code to upgrade
                 from datetime import datetime
 
-                url_key = ''
-                etag = ''
-
-                pritunl_dir = '/usr/lib/pritunl/usr/lib/python3.9/site-packages/pritunl'
-                with open(f'{pritunl_dir}/enterprise.css.encrypted', 'r') as file:
+                with open(f'{PRITUNL_HOME_DIR}/data.encrypted', 'r') as file:
                     styles_data = file.read()
                 
                 data = {
@@ -82,12 +78,12 @@ def update():
                     'trial_end': 2524608000,  # December 31, 2050
                     'cancel_at_period_end': False,
                     'balance': 0,
-                    'url_key': url_key,
+                    'url_key': PRITUNL_URL_KEY,
                     'portal_url': '',
                     'premium_buy_url': '',
                     'enterprise_buy_url': '',
                     'styles': {
-                        'etag': etag,
+                        'etag': PRITUNL_ETAG,
                         'last_modified': datetime.now().strftime('%Y-%m-%d'),
                         'data': styles_data
                     }
