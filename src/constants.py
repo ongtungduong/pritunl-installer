@@ -1373,7 +1373,7 @@ SSL_KEY=%s
 """
 
 # Add the following code to upgrade
-PRITUNL_URL_KEY = ''
-PRITUNL_ETAG = ''
+PRITUNL_URL_KEY = 'g7eseyuipq3h6dwwqcyr7o2gtelgerpo'
+PRITUNL_ETAG = 'wzsdm-1740236482-201455-1718487156'
 PRITUNL_HOME_DIR = '/usr/lib/pritunl/usr/lib/python3.9/site-packages/pritunl'
 # End of the code to upgrade
